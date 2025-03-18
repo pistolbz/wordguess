@@ -13,4 +13,9 @@ public class HomeController {
     public String home() {
         return "index";
     }
+
+    @GetMapping("/leaderboard")
+    public String leaderboard() {
+        return "leaderboard";
+    }
 } 

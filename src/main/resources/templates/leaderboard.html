@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Word Guess - Leaderboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .table td, .table th {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <h1 class="text-center mb-4">Leaderboard</h1>
+        
+        <div class="card shadow">
+            <div class="card-body">
+                <div id="loading" class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+                <table id="leaderboardTable" class="table table-hover" style="display:none">
+                    <thead class="table-dark">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Player Name</th>
+                            <th scope="col">Score</th>
+                            <th scope="col">Play Date</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-primary">Back to Game</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tableBody = document.querySelector('#leaderboardTable tbody');
+            const loadingDiv = document.querySelector('#loading');
+            const table = document.querySelector('#leaderboardTable');
+
+            fetch('/api/leaderboard')
+                .then(response => response.json())
+                .then(entries => {
+                    loadingDiv.style.display = 'none';
+                    table.style.display = 'table';
+                    
+                    tableBody.innerHTML = entries.map((entry, index) => `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${entry.playerName}</td>
+                            <td>${entry.score}</td>
+                            <td>${new Date(entry.playDate).toLocaleString()}</td>
+                        </tr>
+                    `).join('');
+                })
+                .catch(error => {
+                    loadingDiv.innerHTML = '<div class="text-danger">Error loading leaderboard data</div>';
+                    console.error('Error:', error);
+                });
+        });
+    </script>
+</body>
+</html>
