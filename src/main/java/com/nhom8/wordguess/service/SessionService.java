@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Service xử lý logic phiên chơi game
@@ -93,5 +94,10 @@ public class SessionService {
         
         createNewGame(session.getPlayerId());
         return sessionRepository.save(session);
+    }
+
+    // Lấy danh sách Leaderboard
+    public List<Session> getTop10Session() {
+        return sessionRepository.findTop10ByStatusOrderByScoreDesc("FINISHED");
     }
 } 
