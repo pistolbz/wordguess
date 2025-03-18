@@ -32,7 +32,7 @@ public class GameController {
     @MessageMapping("/guess")
     @SendTo("/topic/session")
     public Session makeGuess(GuessRequest request) {
-        return sessionService.processGuess(request.getSessionId(), request.getGuessWord(), request.getPlayerName());
+        return sessionService.processGuess(request.getSessionId(), request.getGuessWord());
     }
 
     /**
@@ -40,7 +40,7 @@ public class GameController {
      */
     @MessageMapping("/end")
     @SendTo("/topic/session")
-    public Session endGame(String sessionId) {
-        return sessionService.endGame(sessionId);
+    public Session endGame(GuessRequest request) {
+        return sessionService.endGame(request.getSessionId(), request.getPlayerName());
     }
 }

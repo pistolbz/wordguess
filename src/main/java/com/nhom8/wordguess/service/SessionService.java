@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Service xử lý logic phiên chơi game
@@ -43,22 +44,21 @@ public class SessionService {
     /**
      * Xử lý khi người chơi đoán từ
      */
-    public Session processGuess(String sessionId, String guessWord, String playerName) {
+    public Session processGuess(String sessionId, String guessWord) {
         Session session = sessionRepository.findById(sessionId)
-            .orElseThrow(() -> new RuntimeException("Không tìm thấy phiên chơi"));
-        
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiên chơi"));
+
         if (session.getStatus().equals("PLAYING")) {
             // Kiểm tra từ đoán
             String correctWord = wordService.findById(session.getCurrentWordId())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy từ"))
-                .getWord();
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy từ"))
+                    .getWord();
             if (guessWord.equalsIgnoreCase(correctWord)) {
                 // Đoán đúng, cộng điểm, round mới
                 session.setScore(session.getScore() + 10);
                 session.setRound(session.getRound() + 1);
                 session.setRemainingGuesses(3);
 
-                // Thêm từ đã đoán vào danh sách
                 session.getGuessedWords().add(correctWord);
 
                 // Chuẩn bị từ tiếp theo
@@ -69,11 +69,8 @@ public class SessionService {
                 // Đoán sai, giảm số lượt đoán còn lại
                 session.setRemainingGuesses(session.getRemainingGuesses() - 1);
                 if (session.getRemainingGuesses() == 0) {
-                    // Hết lượt đoán, kết thúc game
-                    if (!playerName.isEmpty()) {
-                        session.setPlayerName(playerName);
-                    }
-                    return endGame(sessionId);
+                    session.setStatus("FINISHED");
+                    session.setEndTime(LocalDateTime.now());
                 }
             }
         }
@@ -83,21 +80,22 @@ public class SessionService {
     /**
      * Kết thúc phiên chơi
      */
-    public Session endGame(String sessionId) {
+    public Session endGame(String sessionId, String playerName) {
         Session session = sessionRepository.findById(sessionId)
-            .orElseThrow(() -> new RuntimeException("Không tìm thấy phiên chơi"));
-        
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiên chơi"));
+
         if (!session.getStatus().equals("FINISHED")) {
             session.setStatus("FINISHED");
             session.setEndTime(LocalDateTime.now());
         }
-        
-        createNewGame(session.getPlayerId());
+        session.setPlayerName(playerName);
         return sessionRepository.save(session);
     }
-
-    // Lấy danh sách Leaderboard
-    public List<Session> getTop10Session() {
-        return sessionRepository.findTop10ByStatusOrderByScoreDesc("FINISHED");
+    
+    //Lấy danh sách top 10 người chơi có điểm cao nhất
+    public List<Session> getLeaderboard() {
+        List<Session> topSessions = sessionRepository.findTop10ByStatusOrderByScoreDesc();
+        // Giới hạn chỉ lấy 10 kết quả (để đảm bảo)
+        return topSessions.stream().limit(10).collect(Collectors.toList());
     }
-} 
+}

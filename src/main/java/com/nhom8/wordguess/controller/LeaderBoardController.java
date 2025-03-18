@@ -1,20 +1,33 @@
 package com.nhom8.wordguess.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.stereotype.Controller;
+import com.nhom8.wordguess.dto.LeaderboardEntryDTO;
+import com.nhom8.wordguess.service.SessionService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-/**
- * Controller xử lý các request liên quan đến từ vựng
- */
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController
 @RequestMapping("/api/leaderboard")
-@Controller
 public class LeaderBoardController {
-
-    @GetMapping("/")
-    public String showLeaderBoardPage() {
-        return "leaderboard";
+    
+    @Autowired
+    private SessionService sessionService;
+    
+    @GetMapping
+    public ResponseEntity<List<LeaderboardEntryDTO>> getLeaderboard() {
+        return ResponseEntity.ok(
+            sessionService.getLeaderboard().stream()
+                .map(session -> new LeaderboardEntryDTO(
+                    session.getPlayerName(),
+                    session.getPlayerId(),
+                    session.getScore(),
+                    session.getRound(),
+                    session.getEndTime()
+                ))
+                .collect(Collectors.toList())
+        );
     }
 }
