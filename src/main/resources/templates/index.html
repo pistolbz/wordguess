@@ -27,9 +27,9 @@
             </div>
             
             <div class="flex space-x-4">
-                <input type="text" id="guess-word" 
-                    class="flex-1 px-4 py-3 rounded-lg border-2 border-indigo-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all" 
-                    placeholder="Enter your guess"/>
+                <div id="char-boxes" class="flex-1 flex gap-2 justify-center">
+                    <!-- Character boxes will be generated here -->
+                </div>
                 <button onclick="makeGuess()" 
                     class="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-semibold">
                     Make Guess
@@ -98,7 +98,7 @@
         function startNewGame() {
             playerId = "player_" + Math.random().toString(36).substring(2, 11);
             document.querySelector(".gamearea").style.display = "block";
-            document.querySelector("#guess-word").value = "";
+            // document.querySelector("#guess-word").value = "";
             stompClient.send("/app/start", {}, playerId);
         }
 
@@ -111,22 +111,65 @@
                 <div class="grid grid-cols-2 gap-4 text-gray-600">
                     <p>Round: ${session.round}</p>
                     <p>Status: ${session.status}</p>
-                    <p>Session ID: ${session.id}</p>
-                    <p>Player ID: ${session.playerId}</p>
+                    <p>Remaining Tries: ${session.remainingGuesses}</p>
+                    <p>Guessed Words: ${session.charMissing}</p>
+                    <p style="display:hidden;">Session ID: ${session.id}</p>
                 </div>
             `;
+            updateCharacterBoxes(session.charMissing);
             console.log("Session updated:", session);
+        }
+
+        function updateCharacterBoxes(word) {
+            const boxesContainer = document.getElementById('char-boxes');
+            boxesContainer.innerHTML = '';
+            
+            for (let i = 0; i < word.length; i++) {
+                const char = word[i];
+                const box = document.createElement('div');
+                
+                if (char === '_') {
+                    // Create input box for missing character
+                    box.innerHTML = `<input type="text" 
+                        maxlength="1" 
+                        class="w-12 h-12 border-2 border-indigo-300 rounded text-center text-xl font-bold uppercase
+                        focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none" 
+                        oninput="this.value = this.value.toUpperCase()">`;
+                } else {
+                    // Create display box for known character
+                    box.innerHTML = `<div class="w-12 h-12 border-2 border-indigo-300 rounded text-center text-xl 
+                        font-bold bg-indigo-100 flex items-center justify-center uppercase">${char}</div>`;
+                }
+                
+                boxesContainer.appendChild(box);
+            }
         }
 
         function makeGuess() {
             const sessionId = document.querySelector("#game-status").textContent.match(/Session ID: (.*)/)[1];
-            var word = document.querySelector("#guess-word").value;
+            const boxes = document.querySelectorAll('#char-boxes input');
+            const existingChars = document.querySelectorAll('#char-boxes > div > div');
+            
+            let word = '';
+            let index = 0;
+            
+            document.querySelectorAll('#char-boxes > div').forEach(box => {
+                if (box.querySelector('input')) {
+                    word += box.querySelector('input').value || '_';
+                } else {
+                    word += box.querySelector('div').textContent;
+                }
+            });
+
+            if (word.includes('_')) {
+                alert('Please fill in all characters');
+                return;
+            }
 
             stompClient.send("/app/guess", {}, JSON.stringify({
                 sessionId: sessionId,
                 guessWord: word,
             }));
-            document.querySelector("#guess-word").value = "";
         }
 
         function submitScore() {

@@ -31,13 +31,14 @@ public class SessionService {
         newSession.setScore(0);
         newSession.setStatus("PLAYING");
         newSession.setStartTime(LocalDateTime.now());
-        newSession.setGuessedWords(new ArrayList<>());
         newSession.setRemainingGuesses(3);
         newSession.setRound(1);
         // Lấy từ ngẫu nhiên cho phiên chơi
         Word word = wordService.getRandomWord();
         newSession.setCurrentWordId(word.getId());
         newSession.setCurrentWordHint(word.getHint());
+        newSession.setCharMissing(hideWord(word.getWord()));
+
         return sessionRepository.save(newSession);
     }
 
@@ -57,20 +58,27 @@ public class SessionService {
                 // Đoán đúng, cộng điểm, round mới
                 session.setScore(session.getScore() + 10);
                 session.setRound(session.getRound() + 1);
-                session.setRemainingGuesses(3);
-
-                session.getGuessedWords().add(correctWord);
 
                 // Chuẩn bị từ tiếp theo
                 Word word = wordService.getRandomWord();
                 session.setCurrentWordId(word.getId());
                 session.setCurrentWordHint(word.getHint());
+                session.setCharMissing(hideWord(word.getWord()));
             } else {
                 // Đoán sai, giảm số lượt đoán còn lại
                 session.setRemainingGuesses(session.getRemainingGuesses() - 1);
                 if (session.getRemainingGuesses() == 0) {
                     session.setStatus("FINISHED");
                     session.setEndTime(LocalDateTime.now());
+                }
+
+                // Kiểm tra các ký tự đã đoán đúng và thay thế dấu _
+                String charMissing = session.getCharMissing();
+                StringBuilder newCharMissing = new StringBuilder(charMissing);
+                for (int i = 0; i < correctWord.length(); i++) {
+                    if (correctWord.charAt(i) == guessWord.charAt(0)) {
+                        newCharMissing.setCharAt(i, guessWord.charAt(0));
+                    }
                 }
             }
         }
@@ -97,5 +105,32 @@ public class SessionService {
         List<Session> topSessions = sessionRepository.findTop10ByStatusOrderByScoreDesc();
         // Giới hạn chỉ lấy 10 kết quả (để đảm bảo)
         return topSessions.stream().limit(10).collect(Collectors.toList());
+    }
+
+    // Ẩn một số ký tự trong từ vựng
+    public String hideWord(String word) {
+        if (word == null || word.isEmpty()) {
+            return word;
+        }
+
+        StringBuilder hiddenWord = new StringBuilder(word);
+        int length = word.length();
+        int charsToHide = Math.max(1, (int) Math.ceil(length * 0.3));
+
+        List<Integer> indices = new ArrayList<>();
+        for (int i = 0; i < length; i++) {
+            indices.add(i);
+        }
+
+        java.util.Collections.shuffle(indices);
+
+        // Replace characters with underscore
+        for (int i = 0; i < charsToHide; i++) {
+            if (i < indices.size()) {
+                hiddenWord.setCharAt(indices.get(i), '_');
+            }
+        }
+
+        return hiddenWord.toString();
     }
 }
