@@ -96,6 +96,6 @@ public class SessionService {
     public List<Session> getLeaderboard() {
         List<Session> topSessions = sessionRepository.findTop10ByStatusOrderByScoreDesc();
         // Giới hạn chỉ lấy 10 kết quả (để đảm bảo)
-        return topSessions.stream().limit(20).collect(Collectors.toList());
+        return topSessions.stream().limit(10).collect(Collectors.toList());
     }
 }
