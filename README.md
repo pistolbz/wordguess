@@ -52,3 +52,27 @@ wordguess/
 ## 🔒 Môi trường phát triển yêu cầu
 - Java 17+
 - MongoDB
+
+## 🚀 Hướng dẫn cài đặt
+
+### Clone repository
+```bash
+git clone https://github.com/your-username/wordguess.git
+cd wordguess
+```
+
+### Cấu hình MongoDB
+1. Cài đặt MongoDB
+2. Tạo database mới tên "wordguess"
+3. Cập nhật thông tin kết nối trong `application.properties`
+
+### Chạy ứng dụng
+```bash
+# Build project với Maven
+mvn clean install
+
+# Chạy ứng dụng
+mvn spring-boot:run
+```
+
+Truy cập ứng dụng tại `http://localhost:8089`
