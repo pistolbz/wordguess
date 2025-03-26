@@ -35,5 +35,5 @@ jobs:
         chmod +x ~/wordguess/app.jar  # Cấp quyền thực thi cho file .jar
         
         echo "Starting new application..."
-        nohup java -jar ~/wordguess/app.jar --spring.config.location=~/wordguess/config/application.properties > ~/wordguess/app.log 2>&1 &
+        nohup java -jar ~/wordguess/app.jar -- spring.config.location=~/wordguess/config/application.properties > ~/wordguess/app.log 2>&1 &
       working-directory: ${{ github.workspace }}
