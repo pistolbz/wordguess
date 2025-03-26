@@ -115,7 +115,7 @@ public class SessionService {
 
         StringBuilder hiddenWord = new StringBuilder(word);
         int length = word.length();
-        int charsToHide = Math.max(1, (int) Math.ceil(length * 0.5));
+        int charsToHide = Math.max(1, (int) Math.ceil(length * 0.4));
 
         List<Integer> indices = new ArrayList<>();
         for (int i = 0; i < length; i++) {

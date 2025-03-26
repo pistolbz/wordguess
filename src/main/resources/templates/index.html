@@ -11,32 +11,72 @@
         body {
             font-family: 'Poppins', sans-serif;
         }
+        
+        @keyframes correct {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); background-color: #4ade80; }
+        }
+        
+        @keyframes wrong {
+            0%, 100% { transform: scale(1); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); background-color: #f87171; }
+            20%, 40%, 60%, 80% { transform: translateX(2px); }
+        }
+        
+        .animate-correct {
+            animation: correct 0.5s ease-in-out;
+        }
+        
+        .animate-wrong {
+            animation: wrong 0.5s ease-in-out;
+        }
     </style>
 </head>
 
-<body class="bg-gradient-to-br from-indigo-100 to-purple-100 min-h-screen p-8">
-    <div class="max-w-2xl mx-auto">
-        <div class="text-center space-y-6">
-            <h1 class="text-4xl font-bold text-indigo-800 mb-8">🎮 Word Guessing Game</h1>
-            <button onclick="startNewGame()"
-                class="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 text-lg font-semibold">
-                Start New Game
-            </button>
+<body class="bg-gradient-to-br from-indigo-100 to-purple-100 min-h-screen">
+    <!-- Navigation Header -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex space-x-7">
+                    <a href="/" class="flex items-center py-4">
+                        <span class="font-semibold text-gray-500 text-lg">🎮 Word Guess</span>
+                    </a>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="/" class="py-2 px-4 text-gray-500 hover:text-indigo-600 transition duration-300">New Game</a>
+                    <a href="/leaderboard" class="py-2 px-4 text-gray-500 hover:text-indigo-600 transition duration-300">Leader Board</a>
+                    <button onclick="howToPlayModal.show()" class="py-2 px-4 text-gray-500 hover:text-indigo-600 transition duration-300">How to Play</button>
+                    <a href="#about" class="py-2 px-4 text-gray-500 hover:text-indigo-600 transition duration-300">About</a>
+                </div>
+            </div>
         </div>
+    </nav>
 
-        <div class="gamearea hidden mt-8">
-            <div id="game-status" class="bg-white rounded-xl shadow-lg p-6 mb-6">
-                <!-- Game status will be populated by JavaScript -->
+    <div class="p-8">
+        <div class="max-w-2xl mx-auto">
+            <div class="text-center space-y-6">
+                <h1 class="text-4xl font-bold text-indigo-800 mb-8">🎮 Word Guessing Game</h1>
+                <button onclick="startNewGame()"
+                    class="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 text-lg font-semibold">
+                    Start New Game
+                </button>
             </div>
 
-            <div class="flex space-x-4">
-                <div id="char-boxes" class="flex-1 flex gap-2 justify-center">
-                    <!-- Character boxes will be generated here -->
+            <div class="gamearea hidden mt-8">
+                <div id="game-status" class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                    <!-- Game status will be populated by JavaScript -->
                 </div>
-                <button id="guessButton" onclick="makeGuess()"
-                    class="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-semibold opacity-50 cursor-not-allowed">
-                    Make Guess
-                </button>
+
+                <div class="flex space-x-4">
+                    <div id="char-boxes" class="flex-1 flex gap-2 justify-center">
+                        <!-- Character boxes will be generated here -->
+                    </div>
+                    <button id="guessButton" onclick="makeGuess()"
+                        class="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-semibold opacity-50 cursor-not-allowed">
+                        Make Guess
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -71,6 +111,32 @@
         </div>
     </div>
 
+    <!-- How To Play Modal -->
+    <div class="hidden" id="howToPlayModal" tabindex="-1">
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h5 class="text-2xl font-bold text-indigo-800">❓ How to Play</h5>
+                    <button type="button" class="text-gray-400 hover:text-gray-600"
+                        onclick="howToPlayModal.hide()">✕</button>
+                </div>
+                <div class="space-y-4 text-gray-600">
+                    <p>1. Click "Start New Game" to begin.</p>
+                    <p>2. You'll be shown a word with some missing letters.</p>
+                    <p>3. Try to guess the correct letters to complete the word.</p>
+                    <p>4. You have limited attempts for each word.</p>
+                    <p>5. Score points for each correct guess!</p>
+                </div>
+                <div class="mt-6 text-right">
+                    <button onclick="howToPlayModal.hide()"
+                        class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+                        Got it!
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         let playerId;
         const socket = new SockJS("/ws-wordguess");
@@ -84,6 +150,17 @@
             },
             hide: function () {
                 gameOverModalEl.classList.add('hidden');
+            }
+        };
+
+        // Add this after the gameOverModal definition
+        const howToPlayModalEl = document.getElementById('howToPlayModal');
+        const howToPlayModal = {
+            show: function () {
+                howToPlayModalEl.classList.remove('hidden');
+            },
+            hide: function () {
+                howToPlayModalEl.classList.add('hidden');
             }
         };
 
@@ -115,12 +192,17 @@
                 <h4 class="text-xl font-semibold text-indigo-800 mb-4">Game Progress</h4>
                 <div class="text-2xl font-bold text-indigo-600 mb-4">Word Hint: ${session.currentWordHint}</div>
                 <div class="text-xl text-green-600 font-semibold mb-4">Score: ${session.score}</div>
-                <div class="grid grid-cols-2 gap-4 text-gray-600">
-                    <p>Round: ${session.round}</p>
-                    <p>Status: ${session.status}</p>
-                    <p>Remaining Tries: ${session.remainingGuesses}</p>
-                    <p style="display:hidden;">Session ID: ${session.id}</p>
+                <div class="flex justify-between items-center text-gray-600">
+                    <div class="flex items-center gap-2">
+                        <span class="font-medium">Round:</span>
+                        <span class="bg-indigo-100 px-3 py-1 rounded-full">${session.round}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-medium">Remaining Tries:</span>
+                        <span class="bg-green-100 px-3 py-1 rounded-full">${session.remainingGuesses}</span>
+                    </div>
                 </div>
+                <div class="hidden">Session ID: ${session.id}</div>
             `;
             updateCharacterBoxes(session.charMissing);
             console.log("Session updated:", session);
@@ -186,17 +268,46 @@
                 if (!guessButton.classList.contains('hidden')) {
                     makeGuess();
                 }
+            } else if (event.key === 'Backspace') {
+                const inputs = Array.from(document.querySelectorAll('#char-boxes input'));
+                const currentIndex = parseInt(event.target.dataset.index);
+                
+                // Nếu ô hiện tại trống, tìm ô input trước đó để focus
+                if (!event.target.value) {
+                    // Lọc ra các ô input có index nhỏ hơn ô hiện tại
+                    const previousInputs = inputs.filter(inp => parseInt(inp.dataset.index) < currentIndex);
+                    // Sắp xếp theo thứ tự giảm dần để lấy ô gần nhất
+                    previousInputs.sort((a, b) => parseInt(b.dataset.index) - parseInt(a.dataset.index));
+                    
+                    if (previousInputs.length > 0) {
+                        const nearestInput = previousInputs[0];
+                        nearestInput.focus();
+                        nearestInput.value = '';
+                        event.preventDefault();
+                    }
+                }
             }
         }
 
+        // Thêm event handler cho nút Make Guess
+        document.addEventListener('DOMContentLoaded', function() {
+            const guessButton = document.getElementById('guessButton');
+            guessButton.addEventListener('keydown', function(event) {
+                if (event.key === 'Backspace') {
+                    const inputs = Array.from(document.querySelectorAll('#char-boxes input'));
+                    const lastInput = inputs[inputs.length - 1];
+                    if (lastInput) {
+                        lastInput.focus();
+                        event.preventDefault();
+                    }
+                }
+            });
+        });
+
         function makeGuess() {
             const sessionId = document.querySelector("#game-status").textContent.match(/Session ID: (.*)/)[1];
-            const boxes = document.querySelectorAll('#char-boxes input');
-            const existingChars = document.querySelectorAll('#char-boxes > div > div');
-
+            
             let word = '';
-            let index = 0;
-
             document.querySelectorAll('#char-boxes > div').forEach(box => {
                 if (box.querySelector('input')) {
                     word += box.querySelector('input').value || '_';
@@ -210,10 +321,53 @@
                 return;
             }
 
+            // Store current state before sending guess
+            const previousGuessRemaining = parseInt(document.querySelector("#game-status .bg-green-100").textContent);
+            
             stompClient.send("/app/guess", {}, JSON.stringify({
                 sessionId: sessionId,
                 guessWord: word,
             }));
+
+            // Add temporary subscription for this specific guess
+            const guessSubscription = stompClient.subscribe("/topic/session", function(response) {
+                const session = JSON.parse(response.body);
+                const allBoxes = document.querySelectorAll('#char-boxes > div > *');
+                
+                // Check if guess was correct by comparing remaining guesses
+                const currentGuessRemaining = session.remainingGuesses;
+                const isCorrect = currentGuessRemaining === previousGuessRemaining;
+
+                // Remove any existing animation classes first
+                allBoxes.forEach(box => {
+                    box.classList.remove('animate-correct', 'animate-wrong');
+                });
+
+                // Add new animation after a brief delay
+                setTimeout(() => {
+                    if (isCorrect || session.status === "FINISHED") {
+                        // Correct guess
+                        allBoxes.forEach(box => {
+                            box.classList.add('animate-correct');
+                        });
+                    } else {
+                        // Wrong guess
+                        allBoxes.forEach(box => {
+                            box.classList.add('animate-wrong');
+                        });
+                    }
+
+                    // Remove animation classes after they complete
+                    setTimeout(() => {
+                        allBoxes.forEach(box => {
+                            box.classList.remove('animate-correct', 'animate-wrong');
+                        });
+                    }, 500);
+                }, 50);
+
+                // Unsubscribe after handling the response
+                guessSubscription.unsubscribe();
+            });
         }
 
         function submitScore() {
