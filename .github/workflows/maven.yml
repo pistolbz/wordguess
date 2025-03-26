@@ -31,9 +31,9 @@ jobs:
         
         echo "Deploying new version..."
         JAR_FILE=$(ls target/*.jar | head -n 1)  # Lấy file .jar mới nhất từ target/
-        cp "$JAR_FILE" ~/app.jar  # Copy file .jar vào thư mục chung
-        chmod +x ~/app.jar  # Cấp quyền thực thi cho file .jar
+        cp "$JAR_FILE" ~/wordguess/app.jar  # Copy file .jar vào thư mục chung
+        chmod +x ~/wordguess/app.jar  # Cấp quyền thực thi cho file .jar
+        
         echo "Starting new application..."
-        nohup java -jar ~/app.jar > ~/app.log 2>&1 &
-      
+        nohup java -jar ~/wordguess/app.jar --spring.config.location=~/wordguess/config/application.properties > ~/wordguess/app.log 2>&1 &
       working-directory: ${{ github.workspace }}
