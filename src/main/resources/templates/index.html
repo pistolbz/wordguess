@@ -34,7 +34,7 @@
 </head>
 
 <body class="bg-gradient-to-br from-indigo-100 to-purple-100 min-h-screen">
-    <!-- Navigation Header -->
+    <!-- Điều hướng Header -->
     <nav class="bg-white shadow-lg">
         <div class="max-w-6xl mx-auto px-4">
             <div class="flex justify-between items-center h-16">
@@ -65,12 +65,12 @@
 
             <div class="gamearea hidden mt-8">
                 <div id="game-status" class="bg-white rounded-xl shadow-lg p-6 mb-6">
-                    <!-- Game status will be populated by JavaScript -->
+                    <!-- Trạng thái trò chơi sẽ được cập nhật bởi JavaScript -->
                 </div>
 
                 <div class="flex space-x-4">
                     <div id="char-boxes" class="flex-1 flex gap-2 justify-center">
-                        <!-- Character boxes will be generated here -->
+                        <!-- Các ô ký tự sẽ được tạo ở đây -->
                     </div>
                     <button id="guessButton" onclick="makeGuess()"
                         class="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-semibold opacity-50 cursor-not-allowed">
@@ -81,7 +81,7 @@
         </div>
     </div>
 
-    <!-- Game Over Modal -->
+    <!-- Modal Kết Thúc Trò Chơi -->
     <div class="hidden" id="gameOverModal" tabindex="-1">
         <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
             <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
@@ -111,7 +111,7 @@
         </div>
     </div>
 
-    <!-- How To Play Modal -->
+    <!-- Modal Hướng Dẫn Chơi -->
     <div class="hidden" id="howToPlayModal" tabindex="-1">
         <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
             <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
@@ -153,7 +153,7 @@
             }
         };
 
-        // Add this after the gameOverModal definition
+        // Thêm các hàm modal tùy chỉnh sau phần định nghĩa gameOverModal
         const howToPlayModalEl = document.getElementById('howToPlayModal');
         const howToPlayModal = {
             show: function () {
@@ -211,13 +211,16 @@
         function updateCharacterBoxes(word) {
             const boxesContainer = document.getElementById('char-boxes');
             boxesContainer.innerHTML = '';
+            
+            // Add button reference
+            const guessButton = document.getElementById('guessButton');
 
             for (let i = 0; i < word.length; i++) {
                 const char = word[i];
                 const box = document.createElement('div');
 
                 if (char === '_') {
-                    // Create input box for missing character
+                    // Tạo ô input cho ký tự còn thiếu
                     box.innerHTML = `<input type="text" 
                         maxlength="1" 
                         data-index="${i}"
@@ -226,7 +229,7 @@
                         oninput="this.value = this.value.toUpperCase(); handleInput(this);"
                         onkeydown="handleKeyDown(event)">`;
                 } else {
-                    // Create display box for known character
+                    // Tạo ô hiển thị cho ký tự đã biết
                     box.innerHTML = `<div class="w-12 h-12 border-2 border-indigo-300 rounded text-center text-xl 
                         font-bold bg-indigo-100 flex items-center justify-center uppercase">${char}</div>`;
                 }
@@ -234,7 +237,13 @@
                 boxesContainer.appendChild(box);
             }
 
-            // Focus on first empty input after creating boxes
+            // Add initial button state based on empty inputs
+            const inputs = Array.from(document.querySelectorAll('#char-boxes input'));
+            const allFilled = inputs.every(inp => inp.value.trim() !== '');
+            guessButton.classList.toggle('opacity-50', !allFilled);
+            guessButton.classList.toggle('cursor-not-allowed', !allFilled);
+
+            // Focus vào ô input đầu tiên sau khi tạo các ô
             const firstInput = document.querySelector('#char-boxes input');
             if (firstInput) {
                 firstInput.focus();
@@ -251,11 +260,11 @@
                 if (nextInput) {
                     nextInput.focus();
                 } else {
-                    // If it's the last input and has value, focus the guess button
+                    // Nếu là ô input cuối cùng và đã có giá trị, focus vào nút đoán
                     guessButton.focus();
                 }
 
-                // Check if all inputs are filled
+                // Kiểm tra xem tất cả các ô input đã được điền chưa
                 const allFilled = inputs.every(inp => inp.value.trim() !== '');
                 guessButton.classList.toggle('opacity-50', !allFilled);
                 guessButton.classList.toggle('cursor-not-allowed', !allFilled);
@@ -321,7 +330,7 @@
                 return;
             }
 
-            // Store current state before sending guess
+            // store val trước khi guess
             const previousGuessRemaining = parseInt(document.querySelector("#game-status .bg-green-100").textContent);
             
             stompClient.send("/app/guess", {}, JSON.stringify({
@@ -329,21 +338,19 @@
                 guessWord: word,
             }));
 
-            // Add temporary subscription for this specific guess
             const guessSubscription = stompClient.subscribe("/topic/session", function(response) {
                 const session = JSON.parse(response.body);
                 const allBoxes = document.querySelectorAll('#char-boxes > div > *');
                 
-                // Check if guess was correct by comparing remaining guesses
                 const currentGuessRemaining = session.remainingGuesses;
                 const isCorrect = currentGuessRemaining === previousGuessRemaining;
 
-                // Remove any existing animation classes first
+                // Xoá animation classes trước khi thêm mới
                 allBoxes.forEach(box => {
                     box.classList.remove('animate-correct', 'animate-wrong');
                 });
 
-                // Add new animation after a brief delay
+                // Thêm animation classes
                 setTimeout(() => {
                     if (isCorrect || session.status === "FINISHED") {
                         // Correct guess
@@ -357,7 +364,6 @@
                         });
                     }
 
-                    // Remove animation classes after they complete
                     setTimeout(() => {
                         allBoxes.forEach(box => {
                             box.classList.remove('animate-correct', 'animate-wrong');
@@ -365,7 +371,6 @@
                     }, 500);
                 }, 50);
 
-                // Unsubscribe after handling the response
                 guessSubscription.unsubscribe();
             });
         }

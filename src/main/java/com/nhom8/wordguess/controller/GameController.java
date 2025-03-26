@@ -9,11 +9,10 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
 /**
- * Controller xử lý các tin nhắn WebSocket cho game
+ * Controller để xử lý các tin nhắn WebSocket cho game
  */
 @Controller
 public class GameController {
-
     @Autowired
     private SessionService sessionService;
 

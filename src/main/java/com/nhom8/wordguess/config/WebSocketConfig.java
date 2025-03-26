@@ -26,12 +26,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         config.setApplicationDestinationPrefixes("/app");
     }
 
-@SuppressWarnings("null")
-@Override
-public void registerStompEndpoints(StompEndpointRegistry registry) {
-    // Đăng ký endpoint WebSocket với STOMP
-    registry.addEndpoint("/ws-wordguess")
-            .setAllowedOriginPatterns(allowedOrigins)
-            .withSockJS();
-}
+    @SuppressWarnings("null")
+    @Override
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
+        // Đăng ký endpoint WebSocket với STOMP
+        registry.addEndpoint("/ws-wordguess")
+                .setAllowedOriginPatterns(allowedOrigins)
+                .withSockJS();
+    }
 }

@@ -14,7 +14,7 @@ public interface SessionRepository extends MongoRepository<Session, String> {
     // Tìm phiên chơi theo trạng thái
     List<Session> findByStatus(String status);
     
-    // Tìm phiên chơi theo người chơi
+    // Tìm phiên chơi theo người chơi 
     List<Session> findByPlayerId(String playerId);
 
     // Query lấy top 10 người chơi theo điểm số cao nhất từ các phiên đã kết thúc

@@ -4,7 +4,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
 /**
- * Controller để xử lý các request tới trang chủ
+ * Controller để xử lý các request tới trang chủ và leaderboard
  */
 @Controller
 public class HomeController {
@@ -18,4 +18,4 @@ public class HomeController {
     public String leaderboard() {
         return "leaderboard";
     }
-} 
+}
